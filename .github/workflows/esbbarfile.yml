@@ -1,0 +1,31 @@
+name: Build ESB Bar File
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up IBM Integration Toolkit environment
+      run: |
+        # Add commands to set up your IBM Integration Toolkit environment
+        # For example, update PATH variable
+        export PATH=$PATH:/path/to/your/IntegrationToolkit
+
+    - name: Build ESB Bar file
+      run: |
+        # Add commands to build your ESB Bar file using the toolkit
+        mqsicreatebar -data <workspace_path> -b <bar_file_name>.bar -a <application_name> -p <project_name> -v <version_number>
+
+    - name: Upload Bar file as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: bar-file
+        path: <workspace_path>/<bar_file_name>.bar
