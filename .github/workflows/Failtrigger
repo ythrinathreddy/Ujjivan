@@ -1,0 +1,89 @@
+name: CI/CD Pipeline
+
+trigger:
+  branches:
+    - main  # Update with the branch you want to trigger the pipeline
+
+variables:
+  rejectedFolder: 'rejected'
+  githubToken: ${{ secrets.GITHUB_TOKEN }}  # GitHub token for authentication
+  ansibleInventoryPath: 'path/to/ansible/inventory'  # Update with the path to your Ansible inventory file
+
+jobs:
+- job: BuildAndPublish
+  displayName: 'Build and Publish Artifacts'
+  pool:
+    vmImage: 'windows-latest'  # Update with the appropriate agent image
+
+  steps:
+  - checkout: self
+
+  - script: |
+      # Your build script or commands here
+      # This could be compiling code, running tests, etc.
+      # For example, dotnet build, npm install, etc.
+      echo "Build script goes here"
+    displayName: 'Build'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'MyArtifacts'
+      publishLocation: 'Container'
+
+- job: MoveArtifacts
+  displayName: 'Move Artifacts to GitHub Packages'
+  dependsOn: BuildAndPublish
+  pool:
+    vmImage: 'windows-latest'  # Update with the appropriate agent image
+
+  steps:
+  - checkout: self
+
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '3.1.x'  # Update with your desired .NET SDK version
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+
+  - script: |
+      # Your script to move artifacts to GitHub Packages
+      # This could involve pushing packages using dotnet, npm, etc.
+      echo "Move artifacts to GitHub Packages script goes here"
+    displayName: 'Move to GitHub Packages'
+
+- job: DeployToSIT
+  displayName: 'Deploy to SIT Environment'
+  dependsOn: MoveArtifacts
+  pool:
+    vmImage: 'ubuntu-latest'  # Update with the appropriate agent image for Ansible
+
+  steps:
+  - checkout: self
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'  # Update with your desired Python version
+
+  - script: |
+      # Install Ansible
+      pip install ansible
+
+      # Run Ansible playbook for deployment to SIT
+      ansible-playbook -i $(ansibleInventoryPath) deploy-to-sit.yml
+    displayName: 'Deploy to SIT Environment'
+
+- job: HandleFailures
+  displayName: 'Handle Failures and Notify'
+  dependsOn: MoveArtifacts
+  pool:
+    vmImage: 'windows-latest'  # Update with the appropriate agent image
+
+  steps:
+  - checkout: self
+
+  - script: |
+      # Your script to handle failures and trigger notifications
+      # This could involve moving artifacts to a rejected folder and sending notifications
+      echo "Handle failures and notify script goes here"
+    displayName: 'Handle Failures and Notify'
