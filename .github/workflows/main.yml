@@ -4,7 +4,7 @@ name: Java Maven Build & Publish Artifact
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "master" ]
 
 jobs:
   build_test:
