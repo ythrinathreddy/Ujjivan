@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 jobs:
     build:
-        runs-on:  ubantu-latest
+        runs-on:  ubuntu-latest
         
         steps: 
             - name: step 1 checkout main branch from github
